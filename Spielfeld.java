@@ -1,85 +1,85 @@
 import java.util.Random;
 
 /**
- * Spielfeld - das quadratische Feld (n x n) fuer "Schatzsuche".
+ * Spielfeld - das quadratische Feld (n x n) fuer "Minesucher".
  *
  * Zwei Felder:
- *   - schatzkarte[z][s]      : true = hier liegt ein Schatz.
- *   - offenesSpielfeld[z][s] : was der Spieler sieht.
- *         0  = noch verdeckt         Anzeige "_"
- *        -1  = aufgedeckt, kein Schatz in der Naehe   Anzeige "X"
- *        -2  = aufgedeckt, Schatz angrenzend          Anzeige "?"
- *         1  = Schatz von Spieler 1 gefunden          Anzeige "S1"
- *         2  = Schatz von Spieler 2 gefunden          Anzeige "S2"
+ *   - minen[z][s]       : true = hier liegt eine Mine.
+ *   - aufgedeckt[z][s]  : true = diese Stelle wurde bereits aufgedeckt.
  *
- * Kein 'ae/oe/ue/ss' im Code verwenden.
- * Die TODO-Nummern entsprechen der empfohlenen Reihenfolge (siehe README).
+ * Anzeige (toString):
+ *   - nicht aufgedeckt        -> "#"
+ *   - aufgedeckt und Mine     -> "*"
+ *   - aufgedeckt, keine Mine  -> Anzahl der Minen in den 8 Nachbarn (0..8)
+ *
+ * Kein 'ae/oe/ue/ss' im Code. TODO-Nummern = empfohlene Reihenfolge (siehe README).
  */
 public class Spielfeld {
 
-    /** Rueckgabe-Strings von deckeAuf (gegeben - genau diese verwenden). */
-    public static final String TREFFER = "Schatz gefunden!";
-    public static final String NAH     = "Ein Schatz ist angrenzend.";
-    public static final String FERN    = "Kein Schatz in der Naehe.";
-
     private int n;
-    private boolean[][] schatzkarte;
-    private int[][] offenesSpielfeld;
+    private int anzahlMinen;
+    private boolean[][] minen;
+    private boolean[][] aufgedeckt;
     private Random rd;
 
-    /** Erzeugt ein n x n Feld und versteckt n Schaetze. (gegeben - nicht aendern) */
-    public Spielfeld(int n) {
+    /** Erzeugt ein n x n Feld und verteilt anzahlMinen Minen. (gegeben - nicht aendern) */
+    public Spielfeld(int n, int anzahlMinen) {
         this.n = n;
-        this.schatzkarte = new boolean[n][n];
-        this.offenesSpielfeld = new int[n][n];
+        this.anzahlMinen = anzahlMinen;
+        this.minen = new boolean[n][n];
+        this.aufgedeckt = new boolean[n][n];
         this.rd = new Random();
-        initialisiereSpielfeld();
+        initialisiereMinen();
     }
 
     /**
-     * TODO 10 (schwer): Versteckt genau n Schaetze an n VERSCHIEDENEN Stellen.
+     * TODO 10 (schwer): Verteilt genau anzahlMinen Minen an VERSCHIEDENEN Stellen.
      * Eine Zufallszahl zwischen 0 und n-1 bekommst du mit rd.nextInt(n).
-     * Hinweis: Zaehle, wie viele Schaetze schon gesetzt sind. Solange noch nicht n
-     *   gesetzt sind: eine zufaellige Stelle (z, s) waehlen. Ist dort noch KEIN Schatz,
-     *   setze schatzkarte[z][s] = true und erhoehe den Zaehler. (while-Schleife)
+     * Hinweis: Zaehle, wie viele Minen schon gesetzt sind. Solange noch nicht
+     *   anzahlMinen gesetzt sind: zufaellige Stelle (z, s) waehlen; liegt dort noch
+     *   KEINE Mine, setze minen[z][s] = true und erhoehe den Zaehler. (while-Schleife)
      */
-    private void initialisiereSpielfeld() {
+    private void initialisiereMinen() {
         // TODO 10
-    	
     	int z,s;
-    	while(n > 0) {
+    	while(anzahlMinen > 0) {
     		do {
     			z = rd.nextInt(n);
-        		s = rd.nextInt(n);
-    		}while(schatzkarte[z][s] == true);
-    		schatzkarte[z][s] = true;
-    		n--;
+    			s = rd.nextInt(n);
+    		}while(minen[z][s] == true);
+    		minen[z][s] = true;
+    		anzahlMinen--;
     	}
     }
 
-    /** TODO 6 (leicht): n zurueckgeben. */
+    /** TODO 5 (leicht): n zurueckgeben. */
     public int getN() {
-        // TODO 6
+        // TODO 5
         return n;
     }
 
-    /** TODO 7 (leicht): true, wenn an (z, s) ein Schatz liegt. */
-    public boolean treffer(int z, int s) {
+    /** TODO 6 (leicht): true, wenn an (z, s) eine Mine liegt. */
+    public boolean istMine(int z, int s) {
+        // TODO 6
+        return minen[z][s];
+    }
+
+    /** TODO 7 (leicht): Stelle (z, s) aufdecken (Markierung setzen). */
+    public void aufdecken(int z, int s) {
         // TODO 7
-    
-        return schatzkarte[z][s];
+    	aufgedeckt[z][s] = true;
     }
 
     /**
      * TODO 8 (mittel): Gueltige Eingabe?
-     * true, wenn (z, s) existierende Koordinaten sind UND die Stelle noch verdeckt ist
-     * (offenesSpielfeld[z][s] == 0). Sonst false.
+     * true, wenn (z, s) existierende Koordinaten sind UND die Stelle noch NICHT
+     * aufgedeckt ist. Sonst false.
      * Hinweis: zuerst die Grenzen (0..n-1) pruefen, dann erst auf das Feld zugreifen.
      */
     public boolean gueltigeEingabe(int z, int s) {
         // TODO 8
-    	if(z >= 0 && z < offenesSpielfeld.length && s >= 0 && s < offenesSpielfeld[0].length ) {
-    		if(offenesSpielfeld[z][s] == 0) {
+    	if(z >= 0 && z < aufgedeckt.length && s >= 0 && s < aufgedeckt[0].length) {
+    		if(aufgedeckt[z][s] == false) {
     			return true;
     		}
     	}
@@ -87,118 +87,116 @@ public class Spielfeld {
     }
 
     /**
-     * TODO 9 (schwer): Angrenzend ein Schatz?
-     * true, wenn OBEN, UNTEN, LINKS oder RECHTS (nicht diagonal, nicht die Stelle selbst)
-     * ein Schatz liegt. Sonst false.
-     * Hinweis: jede Richtung einzeln pruefen und die Grenze VOR dem Zugriff testen
-     *   (z. B. z > 0 && schatzkarte[z-1][s]).
+     * TODO 9 (schwer): Zaehlt die Minen in den 8 Nachbarn von (z, s)
+     * (oben, unten, links, rechts UND die vier Diagonalen). Die Stelle (z, s)
+     * selbst zaehlt NICHT mit.
+     * Hinweis: zwei Schleifen dz von -1..1 und ds von -1..1. Ueberspringe dz==0 && ds==0.
+     *   Pruefe fuer jeden Nachbarn zuerst die Grenzen, dann minen[z+dz][s+ds].
      */
-    public boolean angrenzend(int z, int s) {
+    public int zaehleNachbarminen(int z, int s) {
         // TODO 9
-    	boolean erg ;
+    	int summe = 0;
     	//Links
-    	if(s+1 < schatzkarte[0].length && schatzkarte[z][s+1] ) {
-    		erg = true;
+    	if(s+1 < minen[0].length && minen[z][s+1]) {
+    		summe ++;
     	}
-    	//recht
-    	else if(s-1 >= 0 && schatzkarte[z][s-1] ) {
-    		erg = true;
+    	//Recht
+    	if(s-1 >= 0 && minen[z][s-1]) {
+    		summe ++;
     	}
     	//oben
-    	else if(z-1 >= 0 && schatzkarte[z-1][s] ) {
-    		erg = true;
+    	if(z-1 >= 0 && minen[z-1][s]) {
+    		summe ++;
     	}
-    	//unten
-    	else if(z+1 < schatzkarte.length && schatzkarte[z+1][s] ) {
-    		erg = true;
+    	//Links
+    	if(z+1 < minen.length && minen[z+1][s]) {
+    		summe ++;
     	}
-    	else {
-    		erg = false;
+    	//diagonale links oben
+    	if(z-1 >= 0 && s+1 < minen[0].length && minen[z-1][s+1]) {
+    		summe++;
     	}
-        return erg;
+    	//diagonale links unten
+    	if(z+1 < minen.length && s-1 >= 0 && minen[z+1][s-1]) {
+    		summe++;
+    	}
+    	//diagonale recht oben
+    	if(z-1 >= 0 && s-1 >= 0 && minen[z-1][s-1]) {
+    		summe++;
+    	}
+    	//diagonale recht unten
+    	if(z+1 < minen.length  && s+1  < minen[0].length && minen[z+1][s+1]) {
+    		summe++;
+    	}
+        return summe;
     }
 
     /**
-     * TODO 11 (mittel): Deckt die Stelle (z, s) auf.
-     * - Liegt dort ein Schatz: offenesSpielfeld[z][s] = Spielernummer von sp; return TREFFER.
-     * - Sonst, wenn angrenzend ein Schatz liegt: offenesSpielfeld[z][s] = -2; return NAH.
-     * - Sonst: offenesSpielfeld[z][s] = -1; return FERN.
-     * Nutze treffer(...) und angrenzend(...).
+     * TODO 11 (mittel): Sind alle sicheren Felder aufgedeckt (= gewonnen)?
+     * true, wenn jede Stelle, die KEINE Mine ist, bereits aufgedeckt wurde.
+     * Hinweis: bei der ersten sicheren, noch verdeckten Stelle -> return false.
      */
-    public String deckeAuf(int z, int s, Spieler sp) {
+    public boolean alleSicherenAufgedeckt() {
         // TODO 11
-    	if(treffer(z,s)) {
-    		offenesSpielfeld[z][s] = sp.getSpielernummer();
-    		return TREFFER;
+    	for (int i = 0 ; i < aufgedeckt.length; i++) {
+    		for (int j = 0 ; j < aufgedeckt[i].length; j++) {
+    			if(minen[i][j] == false && aufgedeckt[i][j] == false) {
+    				return false;
+    			}
+    		}
     	}
-    	else if(angrenzend(z,s)) {
-    		offenesSpielfeld[z][s] = -2;
-    		return NAH;
-    	}
-    	else {
-    		offenesSpielfeld[z][s] = -1;
-    		return FERN;
-    	}
-    	
-        
+        return true;
     }
 
     /**
-     * TODO 12 (schwer): Baut die Anzeige von offenesSpielfeld als String.
-     * Pro Stelle ein Token, in einer Zeile mit einem Leerzeichen getrennt,
-     * Zeilen mit '\n' getrennt. Token je nach Wert:
-     *    0 -> "_"   -1 -> "X"   -2 -> "?"   1 -> "S1"   2 -> "S2"
-     * Hinweis: mit if/else oder switch je Wert das passende Token anhaengen.
+     * TODO 12 (schwer): Baut die Anzeige als String.
+     * Pro Stelle ein Token (siehe oben: "#", "*" oder eine Zahl), in einer Zeile
+     * mit einem Leerzeichen getrennt, Zeilen mit '\n' getrennt.
+     * Hinweis: fuer aufgedeckte sichere Felder das Ergebnis von zaehleNachbarminen
+     *   benutzen (z. B. "" + zaehleNachbarminen(z, s)).
      */
     public String toString() {
         // TODO 12
-    	String erg = "\t";
+    	String s = "\t";
     	
-    	for(int i = 0; i < offenesSpielfeld[0].length; i++) {
-    		erg += i +"\t";
-    	}
+    	for (int i = 0 ; i < aufgedeckt.length; i++) {
+    		s += i + "\t";
+    	}	
     	
-    	erg += "\n";
+    	s += "\n";
     	
-    	for(int i = 0; i < offenesSpielfeld.length; i++) {
-    		erg += i + "\t";
-    		for( int j = 0; j < offenesSpielfeld[i].length; j++) {
-    			if(offenesSpielfeld[i][j] == 0) {
-    				erg += "_" + "\t";
+    	for (int i = 0 ; i < aufgedeckt.length; i++) {
+    		s += i + "\t";
+    		for (int j = 0 ; j < aufgedeckt[i].length; j++) {
+    			if(aufgedeckt[i][j] == false) {
+    				s += "#" +"\t";
     			}
-    			else if(offenesSpielfeld[i][j] == -1) {
-    				erg += "X" +"\t";
+    			else if(aufgedeckt[i][j] == true && minen[i][j] == true) {
+    				s += "*" +"\t";
     			}
-    			else if(offenesSpielfeld[i][j] == -2) {
-    				erg += "?" +"\t";
+    			else if(aufgedeckt[i][j] == true && minen[i][j] == false) {
+    				s += zaehleNachbarminen(i,j) +"\t";
     			}
-    			else if(offenesSpielfeld[i][j] == 1) {
-    				erg += "S1" +"\t";
-    			}
-    			else if(offenesSpielfeld[i][j] == 2) {
-    				erg += "S2" +"\t";
-    			}
-    			
     		}
-    		erg += "\n";
-    	}
-        return erg;
+    		 s += "\n";
+    	}	
+        return s;
     }
 
     // ---------- Test-Hooks (gegeben - nicht aendern) ----------
 
-    public int[][] getOffenesSpielfeld() {
-        return offenesSpielfeld;
+    public boolean[][] getMinen() {
+        return minen;
     }
 
-    public boolean[][] getSchatzkarte() {
-        return schatzkarte;
+    public boolean[][] getAufgedeckt() {
+        return aufgedeckt;
     }
 
-    /** Setzt eine bekannte Schatzkarte fuer die Tests und leert das offene Feld. */
-    public void setSchatzkarteFuerTest(boolean[][] karte) {
-        this.schatzkarte = karte;
+    /** Setzt eine bekannte Minen-Karte fuer die Tests und leert das aufgedeckt-Feld. */
+    public void setMinenFuerTest(boolean[][] karte) {
+        this.minen = karte;
         this.n = karte.length;
-        this.offenesSpielfeld = new int[n][n];
+        this.aufgedeckt = new boolean[n][n];
     }
 }

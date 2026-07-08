@@ -1,6 +1,6 @@
 /**
  * TestRunner - Alternative zu JUnit (Run As -> Java Application).
- * Fuehrt dieselben 15 Pruefungen wie UnitTests.java aus, ohne Bibliothek.
+ * Fuehrt dieselben Pruefungen wie UnitTests.java aus, ohne Bibliothek.
  * Diese Datei gehoert NICHT zur Abgabe.
  */
 public class TestRunner {
@@ -8,10 +8,10 @@ public class TestRunner {
     static int bestanden = 0, gesamt = 0;
 
     static Spielfeld mitteBoard() {
-        Spielfeld f = new Spielfeld(3);
+        Spielfeld f = new Spielfeld(3, 1);
         boolean[][] karte = new boolean[3][3];
         karte[1][1] = true;
-        f.setSchatzkarteFuerTest(karte);
+        f.setMinenFuerTest(karte);
         return f;
     }
 
@@ -22,98 +22,89 @@ public class TestRunner {
     }
 
     public static void main(String[] args) {
-        System.out.println("=== TestRunner: Schatzsuche ===\n");
+        System.out.println("=== TestRunner: Minesucher ===\n");
 
         pruefe("Spieler: neu", () -> {
-            Spieler s = new Spieler("Alex", 1);
-            return "Alex".equals(s.getName()) && s.getSpielernummer() == 1 && s.getPunkte() == 0;
+            Spieler s = new Spieler("Alex");
+            return "Alex".equals(s.getName()) && s.getPunkte() == 0;
         });
         pruefe("Spieler: punktDazu", () -> {
-            Spieler s = new Spieler("Alex", 1);
+            Spieler s = new Spieler("Alex");
             s.punktDazu(); s.punktDazu();
             return s.getPunkte() == 2;
         });
 
-        pruefe("getN", () -> new Spielfeld(5).getN() == 5);
+        pruefe("getN", () -> new Spielfeld(5, 3).getN() == 5);
 
-        pruefe("genau n Schaetze", () -> {
-            for (int n : new int[] { 3, 4, 6 }) {
-                Spielfeld f = new Spielfeld(n);
+        pruefe("anzahl Minen", () -> {
+            int[][] faelle = { {4, 5}, {5, 3}, {6, 10} };
+            for (int[] fall : faelle) {
+                Spielfeld f = new Spielfeld(fall[0], fall[1]);
                 int c = 0;
-                for (int z = 0; z < n; z++)
-                    for (int s = 0; s < n; s++)
-                        if (f.getSchatzkarte()[z][s]) c++;
-                if (c != n) return false;
+                for (int z = 0; z < fall[0]; z++)
+                    for (int s = 0; s < fall[0]; s++)
+                        if (f.getMinen()[z][s]) c++;
+                if (c != fall[1]) return false;
             }
             return true;
         });
 
-        pruefe("treffer", () -> {
+        pruefe("istMine", () -> {
             Spielfeld f = mitteBoard();
-            return f.treffer(1, 1) && !f.treffer(0, 0);
+            return f.istMine(1, 1) && !f.istMine(0, 0);
         });
 
         pruefe("gueltigeEingabe", () -> {
             Spielfeld f = mitteBoard();
             boolean ok = f.gueltigeEingabe(0, 0) && !f.gueltigeEingabe(-1, 0)
                       && !f.gueltigeEingabe(3, 0) && !f.gueltigeEingabe(0, 3);
-            f.deckeAuf(0, 0, new Spieler("A", 1));
+            f.aufdecken(0, 0);
             return ok && !f.gueltigeEingabe(0, 0);
         });
 
-        pruefe("angrenzend", () -> {
+        pruefe("Nachbarminen (Mitte, Diagonalen, Selbst)", () -> {
             Spielfeld f = mitteBoard();
-            return f.angrenzend(0, 1) && f.angrenzend(1, 0)
-                && !f.angrenzend(0, 0) && !f.angrenzend(1, 1);
+            return f.zaehleNachbarminen(0, 0) == 1
+                && f.zaehleNachbarminen(0, 1) == 1
+                && f.zaehleNachbarminen(2, 2) == 1
+                && f.zaehleNachbarminen(1, 1) == 0;
         });
 
-        pruefe("deckeAuf: Treffer", () -> {
-            Spielfeld f = mitteBoard();
-            String r = f.deckeAuf(1, 1, new Spieler("Alex", 1));
-            return Spielfeld.TREFFER.equals(r) && f.getOffenesSpielfeld()[1][1] == 1;
-        });
-        pruefe("deckeAuf: Nah", () -> {
-            Spielfeld f = mitteBoard();
-            String r = f.deckeAuf(0, 1, new Spieler("A", 1));
-            return Spielfeld.NAH.equals(r) && f.getOffenesSpielfeld()[0][1] == -2;
-        });
-        pruefe("deckeAuf: Fern", () -> {
-            Spielfeld f = mitteBoard();
-            String r = f.deckeAuf(0, 0, new Spieler("A", 1));
-            return Spielfeld.FERN.equals(r) && f.getOffenesSpielfeld()[0][0] == -1;
+        pruefe("Nachbarminen (mehrere)", () -> {
+            Spielfeld f = new Spielfeld(3, 1);
+            boolean[][] karte = new boolean[3][3];
+            karte[0][0] = true; karte[0][1] = true;
+            f.setMinenFuerTest(karte);
+            return f.zaehleNachbarminen(1, 1) == 2;
         });
 
-        pruefe("toString: verdeckt = 16 _", () -> zaehle(new Spielfeld(4).toString(), '_') == 16);
-        pruefe("toString: zeigt S1", () -> {
+        pruefe("alleSicherenAufgedeckt", () -> {
             Spielfeld f = mitteBoard();
-            f.deckeAuf(1, 1, new Spieler("Alex", 1));
-            return f.toString().indexOf("S1") >= 0;
+            if (f.alleSicherenAufgedeckt()) return false;
+            for (int z = 0; z < 3; z++)
+                for (int s = 0; s < 3; s++)
+                    if (!f.getMinen()[z][s]) f.aufdecken(z, s);
+            return f.alleSicherenAufgedeckt();
+        });
+
+        pruefe("toString verdeckt = 16 #", () -> zaehle(new Spielfeld(4, 3).toString(), '#') == 16);
+
+        pruefe("toString zeigt Zahl", () -> {
+            Spielfeld f = mitteBoard();
+            f.aufdecken(0, 0);
+            String t = f.toString();
+            return zaehle(t, '#') == 8 && t.indexOf("1") >= 0;
+        });
+
+        pruefe("toString zeigt Mine *", () -> {
+            Spielfeld f = mitteBoard();
+            f.aufdecken(1, 1);
+            return f.toString().indexOf("*") >= 0;
         });
 
         pruefe("checkEingabeMenu", () ->
             Spiel.checkEingabeMenu(1) && Spiel.checkEingabeMenu(2)
             && !Spiel.checkEingabeMenu(0) && !Spiel.checkEingabeMenu(3));
-
-        pruefe("weiterspielen", () -> {
-            Spieler s1 = new Spieler("A", 1);
-            Spieler s2 = new Spieler("B", 2);
-            s1.punktDazu();
-            boolean a = Spiel.weiterspielen(s1, s2, 4);
-            s2.punktDazu(); s2.punktDazu(); s2.punktDazu();
-            return a && !Spiel.weiterspielen(s1, s2, 4);
-        });
-
-        pruefe("auswertung", () -> {
-            Spieler s1 = new Spieler("Alex", 1);
-            Spieler s2 = new Spieler("Mika", 2);
-            s1.punktDazu(); s1.punktDazu(); s2.punktDazu();
-            String e = Spiel.auswertung(s1, s2);
-            Spieler g1 = new Spieler("A", 1);
-            Spieler g2 = new Spieler("B", 2);
-            g1.punktDazu(); g2.punktDazu();
-            return e.indexOf("Alex") >= 0 && e.indexOf("gewonnen") >= 0
-                && Spiel.auswertung(g1, g2).indexOf("Unentschieden") >= 0;
-        });
 
         System.out.println("\n=== Ergebnis: " + bestanden + "/" + gesamt + " bestanden ===");
     }
