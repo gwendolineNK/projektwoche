@@ -1,1 +1,35 @@
+C'est bien Schatzsuche cette fois — et c'est du très bon travail. 11 méthodes sur 12 sont correctes. Il reste un seul vrai bug, dans initialisiereSpielfeld.
+Spieler — ✅ tout bon.
+Spielfeld :
 
+getN ✅, treffer ✅, gueltigeEingabe ✅, deckeAuf ✅, toString ✅
+angrenzend ✅ — ta chaîne if/else if fonctionne ici (dès qu'un voisin a un trésor → true, sinon on teste le suivant). Juste tes commentaires links/rechts sont inversés, mais le code est correct.
+initialisiereSpielfeld ❌ le bug.
+
+Regarde ta boucle :
+javawhile(n > 0) {
+    do { z = rd.nextInt(n); s = rd.nextInt(n); } while(schatzkarte[z][s]);
+    schatzkarte[z][s] = true;
+    n--;                       // <-- tu detruis l'attribut n de l'objet !
+}
+Deux conséquences :
+
+Tu décrémentes n, l'attribut de la classe. À la fin, n == 0. Donc getN() renvoie 0 (→ le test testGetN échoue), et plus rien ne connaît la vraie taille du plateau.
+rd.nextInt(n) rétrécit à chaque tour (5, 4, 3, 2, 1…) : tes trésors se concentrent en haut à gauche au lieu d'être répartis sur tout le plateau.
+
+La règle : n décrit la taille du plateau, on n'y touche jamais. Utilise un compteur séparé :
+javaprivate void initialisiereSpielfeld() {
+    int gesetzt = 0;
+    while (gesetzt < n) {
+        int z = rd.nextInt(n);
+        int s = rd.nextInt(n);
+        if (!schatzkarte[z][s]) {   // Stelle noch frei
+            schatzkarte[z][s] = true;
+            gesetzt++;
+        }
+    }
+}
+Ici n reste intact, la plage rd.nextInt(n) couvre tout le plateau, et on place exactement n trésors distincts.
+Spiel — ✅ tout bon (menu, checkEingabeMenu, weiterspielen, auswertung).
+Petit détail non bloquant : dans toString tu sépares avec "\t" (tabulation) et tu ajoutes les numéros de ligne/colonne. C'est même plus proche du vrai sujet (l'exemple d'avril 2026 affiche les indices !) ; les tests passent. Le sujet demande des espaces plutôt que des tabs, à ajuster si tu veux coller pile au format.
+Bilan : 11/12. Corrige juste le compteur de initialisiereSpielfeld et tu es à 12/12. Renvoie-le si tu veux que je revérifie — sinon on peut enchaîner sur Kalaha ou Nim. 💪
