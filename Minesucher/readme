@@ -1,1 +1,22 @@
+Cette fois c'est bien Minesucher — et c'est excellent : les 14 méthodes sont correctes. 🎉 TestRunner passerait à 14/14.
+Les points forts :
 
+zaehleNachbarminen ✅ — les 8 directions, bornes vérifiées avant chaque accès, case elle-même non comptée. C'était le morceau « schwer » et tu l'as fait proprement.
+alleSicherenAufgedeckt ✅ — et cette fois tu as bien utilisé aufgedeckt[i].length pour la boucle interne. Le réflexe est acquis 👏
+Spieler, getN, istMine, aufdecken, gueltigeEingabe, toString, menu, checkEingabeMenu : tous bons.
+
+Une remarque (pas un bug ici, mais à corriger par principe) — initialisiereMinen :
+javawhile(anzahlMinen > 0) {
+    ...
+    anzahlMinen--;   // tu decrementes l'attribut de l'objet
+}
+C'est exactement le même schéma que le bug de Schatzsuche. Ici ça ne casse rien parce que anzahlMinen n'est utilisé nulle part ailleurs — donc les tests passent. Mais c'est fragile : si une méthode lisait anzahlMinen plus tard, elle verrait 0. Prends l'habitude du compteur séparé :
+javaint gesetzt = 0;
+while (gesetzt < anzahlMinen) {
+    int z = rd.nextInt(n);
+    int s = rd.nextInt(n);
+    if (!minen[z][s]) { minen[z][s] = true; gesetzt++; }
+}
+(Bon point au passage : tu as utilisé rd.nextInt(n) avec n intact, donc tes mines sont bien réparties — contrairement à Schatzsuche.)
+Détail cosmétique : dans menu tu affiches « 2 - Programm beendet. » au lieu de « beenden » — sans impact.
+Bilan : 14/14, du très bon travail. Le seul vrai apprentissage à retenir : ne jamais décrémenter un attribut qui décrit une taille/quantité — utilise un compteur local.
