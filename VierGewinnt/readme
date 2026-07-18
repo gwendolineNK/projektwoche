@@ -1,1 +1,22 @@
 
+J'ai tout relu : Vier gewinnt est correct — 13/13. 🎉 Rien à corriger sur le fond, tout compile et passe les tests.
+Le détail :
+
+Spieler, getZelle, spalteGueltig, istVoll, einwerfen ✅
+vierInReiheWaagerecht ✅, vierInReiheSenkrecht ✅
+vierInReiheDiagonal ✅ — et c'était le plus dur. Tes deux directions (bas-droite feld[i+k][j+k], bas-gauche feld[i+k][j-k]) sont bonnes, avec les tests de bornes avant chaque accès.
+hatGewonnen ✅, toString ✅
+Spiel : menu ✅, checkEingabeMenu ✅
+
+Une remarque de style sur vierInReiheDiagonal (ça marche, mais c'est « par chance ») : tes boucles externes vont jusqu'à i < GEWINN et j < GEWINN. Ça tombe juste ici parce que tes vérifications internes (i+3 < feld.length, j+3 < feld[i].length, j-3 >= 0) rattrapent tout. La forme « manuel scolaire », plus claire et générale, borne directement le point de départ :
+java// bas-droite : depart en (i,j)
+for (int i = 0; i <= ZEILEN - GEWINN; i++) {          // 0..2
+    for (int j = 0; j <= SPALTEN - GEWINN; j++) {     // 0..3
+        if (feld[i][j] == spielernummer
+            && feld[i+1][j+1] == spielernummer
+            && feld[i+2][j+2] == spielernummer
+            && feld[i+3][j+3] == spielernummer) return true;
+    }
+}
+Là, comme le départ est déjà borné à ZEILEN-GEWINN / SPALTEN-GEWINN, tu n'as même plus besoin des tests i+3 < ... à l'intérieur. Ta version reste correcte — je te montre juste la variante que le prof attend probablement.
+Cosmétique (non noté) : tabs au lieu d'espaces dans toString, et « 2 - Programm beenden**.** » avec un point.
