@@ -1,1 +1,61 @@
+Hat einen Befehl ausgeführtC'est l'examen le plus dur, et ça se voit : la base est bonne, mais les 3 méthodes du cœur sont à refaire. Bonne nouvelle : elles partagent toutes la même erreur, donc une fois le principe compris, les trois se corrigent d'un coup.
+D'abord un point technique : tes classes s'appellent Spieler_reversi, Spielfeld_reversi, Spiel_reversi. Pour que les UnitTests/TestRunner marchent, elles doivent s'appeler Spieler, Spielfeld, Spiel (fichiers Spieler.java…). Renomme-les dans Eclipse (Refactor → Rename). C'est juste le renommage pour l'upload, mais à l'examen le nom compte.
+Ce qui est ✅ : Spieler, gegner, imFeld, zaehleSteine, istVoll, getZelle, toString, hatGueltigenZug, menu, checkEingabeMenu.
 
+Le problème commun : parcourir les 8 directions
+Tu as fait partout deux boucles imbriquées for i in DZ … for j in DS … et tu passes i et j (les indices 0..7) comme direction. Or DZ/DS sont des paires : la direction n° k c'est (DZ[k], DS[k]). Il faut une seule boucle :
+javafor (int k = 0; k < DZ.length; k++) {
+    ... pruefeRichtung(z, s, DZ[k], DS[k], nummer) ...
+}
+Jamais pruefeRichtung(z,s,i,j,...) avec les indices.
+
+pruefeRichtung (TODO 9) — à réécrire
+Tes bugs :
+
+Dans la marche tu fais cz++; cs++; → tu avances toujours en bas-droite, quelle que soit la direction. Il faut cz += dz; cs += ds;.
+Ta détection d'adversaire gegner(getZelle(...)) != nummer est fausse (et gegner(0) renvoie 1, donc une case vide est prise pour un adversaire quand nummer==1). Un adversaire, c'est simplement feld[cz][cs] == gegner(nummer).
+Ta fin teste si on est arrivé au coin du plateau (cz == feld.length-1 …) — ça n'a aucun rapport. Il faut : à la fin, on doit être dans le plateau sur un pion à soi (== nummer).
+
+Version correcte :
+javapublic boolean pruefeRichtung(int z, int s, int dz, int ds, int nummer) {
+    int cz = z + dz;
+    int cs = s + ds;
+    // 1. direkt daneben MUSS ein Gegnerstein sein
+    if (!imFeld(cz, cs) || feld[cz][cs] != gegner(nummer)) {
+        return false;
+    }
+    // 2. ueber Gegnersteine weiterlaufen (in Richtung dz, ds!)
+    while (imFeld(cz, cs) && feld[cz][cs] == gegner(nummer)) {
+        cz += dz;
+        cs += ds;
+    }
+    // 3. am Ende MUSS ein eigener Stein stehen
+    return imFeld(cz, cs) && feld[cz][cs] == nummer;
+}
+istZugGueltig (TODO 10) — une seule boucle
+javapublic boolean istZugGueltig(int z, int s, int nummer) {
+    if (feld[z][s] != 0) return false;              // Stelle muss leer sein
+    for (int k = 0; k < DZ.length; k++) {
+        if (pruefeRichtung(z, s, DZ[k], DS[k], nummer)) return true;
+    }
+    return false;
+}
+setzeStein (TODO 11) — même principe + retourner dans la bonne direction
+javapublic void setzeStein(int z, int s, int nummer) {
+    feld[z][s] = nummer;
+    for (int k = 0; k < DZ.length; k++) {
+        if (pruefeRichtung(z, s, DZ[k], DS[k], nummer)) {
+            int cz = z + DZ[k];
+            int cs = s + DS[k];
+            while (feld[cz][cs] == gegner(nummer)) {   // solange Gegner -> umdrehen
+                feld[cz][cs] = nummer;
+                cz += DZ[k];
+                cs += DS[k];
+            }
+        }
+    }
+}
+(Ici pas besoin de imFeld dans le while : pruefeRichtung a déjà garanti qu'un pion à toi ferme la ligne.)
+
+Retiens l'idée maîtresse : une direction = une paire (DZ[k], DS[k]), et on avance toujours en ajoutant cette paire. C'est le même schéma que le compteur de mines à 8 voisins, mais ici on continue dans la direction au lieu de regarder une seule case.
+Corrige ces 3 méthodes (+ le renommage) et relance TestRunner — tu devrais passer de ~8/12 à 12/12. Renvoie-le-moi si tu veux que je revérifie.
