@@ -1,1 +1,14 @@
 
+Mastermind est correct à 100%, 10/10. 🎉 Et bravo particulièrement pour initialisiereCode : tu as utilisé un boolean[10] pour mémoriser les chiffres déjà tirés — exactement le bon réflexe pour garantir des chiffres tous différents, sans toucher à un attribut. C'était le morceau « schwer ».
+
+Le détail :
+
+Spieler ✅
+getLaenge, enthaelt, zaehleBulls, istGeloest ✅
+zaehleKuehe ✅ — la condition clé code[i] != tipp[i] && enthaelt(tipp[i]) est parfaite (bonne ziffer, mauvaise place).
+initialisiereCode ✅
+Spiel : menu, checkEingabeMenu ✅
+
+Rien à corriger.
+
+Point d'étape — tes jeux réussis : Schatzsuche, Minesucher, Vier gewinnt, Reversi, Kalaha, Mastermind ✅ (Dame en cours de finalisation). Tu maîtrises maintenant toutes les notions du prof.
