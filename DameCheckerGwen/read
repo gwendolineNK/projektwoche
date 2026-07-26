@@ -1,1 +1,47 @@
 
+Bien, c'est le bon Dame cette fois. Presque tout est correct, mais les deux méthodes ...Gueltig ont un bug de logique booléenne — le piège classique du && vs || dans les gardes. Résultat : testEinfacherZug échoue (elle accepte des coups interdits).
+
+Ce qui est ✅ : Spieler, getZelle, gegner, imFeld, richtung, zaehleSteine, fuehreZug, hatGewonnen, toString, Spiel.
+
+Regarde ta istEinfacherZugGueltig :
+
+java
+if(!imFeld(z1,s1) && !imFeld(z2,s2)) return false;          // (1)
+if(getZelle(z1,s1) != nummer && getZelle(z2,s2) != 0) return false;  // (2)
+if(z2 - z1 != richtung(nummer) && (s2 - s1 != 1 || s2 - s1 != -1)) return false;  // (3)
+return true;
+
+Bug 1 — OU au lieu de ET. Un coup est invalide si au moins une condition échoue. Avec if(A && B) return false, tu ne rejettes que si les deux échouent → beaucoup trop permissif. Exemple : (2,2)→(3,2) (tout droit) devrait être refusé, mais chez toi il passe.
+
+Bug 2 — une expression toujours vraie. (s2 - s1 != 1 || s2 - s1 != -1) est toujours true (un nombre ne peut pas valoir 1 et -1 en même temps). La colonne est valide si s2-s1 == 1 || s2-s1 == -1 ; donc invalide si != 1 **&&** != -1 (ET, pas OU). C'est le piège de De Morgan.
+
+La solution la plus sûre : écrire la condition en POSITIF et la renvoyer directement (plus de gardes négatives, plus de confusion) :
+
+java
+public boolean istEinfacherZugGueltig(int z1, int s1, int z2, int s2, int nummer) {
+    return imFeld(z1, s1) && imFeld(z2, s2)
+        && feld[z1][s1] == nummer          // eigener Stein
+        && feld[z2][s2] == 0               // Ziel leer
+        && z2 - z1 == richtung(nummer)     // ein Feld vorwaerts
+        && (s2 - s1 == 1 || s2 - s1 == -1);// eine Spalte zur Seite
+}
+
+Bonus : imFeld(...) en premier → grâce au court-circuit de &&, on n'accède jamais à feld[...] hors limites (ton code actuel pouvait lever une ArrayIndexOutOfBounds).
+
+Même correction pour le saut :
+
+java
+public boolean istSchlagzugGueltig(int z1, int s1, int z2, int s2, int nummer) {
+    return imFeld(z1, s1) && imFeld(z2, s2)
+        && feld[z1][s1] == nummer
+        && feld[z2][s2] == 0
+        && z2 - z1 == 2 * richtung(nummer)
+        && (s2 - s1 == 2 || s2 - s1 == -2)
+        && feld[(z1 + z2) / 2][(s1 + s2) / 2] == gegner(nummer);  // Gegner dazwischen
+}
+
+(Ta istSchlagzugGueltig passait les tests « par chance » grâce au contrôle du pion du milieu, mais elle avait les mêmes bugs &&/|| — cette version propre les élimine.)
+
+À retenir, la règle d'or : pour une validation à plusieurs conditions, écris la version positive return A && B && C && …; plutôt que d'empiler des if(...) return false;. Tu évites d'un coup les deux pièges.
+
+Corrige ces deux méthodes et relance TestRunner → tu passeras à 14/14. Renvoie-le si tu veux que
