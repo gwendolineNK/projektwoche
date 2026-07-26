@@ -1,1 +1,16 @@
 
+Excellent — Kalaha est correct à 100%, 13/13. 🎉 Et surtout, la méthode-cœur saee est parfaite : boucle (pos + 1) % MULDEN, continue pour sauter le Kalaha adverse, retour de la dernière mulde. L'arithmétique modulaire est acquise — c'était la dernière grande notion de ta liste.
+
+Le détail :
+
+Spieler, getMulde, kalahaIndex, getKalaha, eigeneMulde, istZugGueltig ✅
+saee ✅ (le morceau « schwer », nickel — y compris le saut du Kalaha adverse et le passage « par-dessus zéro »)
+letzteImEigenenKalaha, istSpielEnde, toString ✅
+Spiel : menu, checkEingabeMenu ✅
+
+Une seule micro-remarque (pas un bug) : dans istZugGueltig tu écris mulden[index] != 0. C'est correct puisqu'une mulde n'a jamais de valeur négative ; > 0 serait juste un poil plus explicite (« au moins un stein »). Aucune conséquence.
+
+Bilan de ta prépa jusqu'ici — tu as réussi, avec correction méthode par méthode :
+Schatzsuche ✅, Minesucher ✅, Vier gewinnt ✅, Reversi ✅ (après correction), Dame (à finaliser), Kalaha ✅. Tu couvres maintenant toutes les notions du prof : Felder 2D, Boolean, voisins 4/8, arithmétique modulaire, ASCII (Mastermind), dés/rounds.
+
+Il ne reste que Nim (l'échauffement) pour boucler entièrement la liste. On l'enchaîne, ou tu préfères d'abord finir Dame et faire Mastermind ?
