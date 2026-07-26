@@ -1,1 +1,10 @@
+Pig est correct — 7/7. 🎉 Toutes les méthodes passent : wuerfeln, istPech, neuerRundenScore, hatGewonnen, punkteDazu, menu, checkEingabeMenu.
 
+Deux détails cosmétiques (aucun impact) :
+
+Dans le constructeur Spieler, tu ne mets pas explicitement this.punkte = 0;. Ça marche quand même car en Java un int vaut 0 par défaut — donc getPunkte() renvoie bien 0. Mais à l'examen, écris-le explicitement (this.punkte = 0;) : c'est plus clair et ça montre l'intention.
+Menu : « 2 - Programm beendet » au lieu de « beenden ». Cosmétique.
+
+C'est du sans-faute sur un jeu où toute la logique tient dans de petites méthodes pures — exactement le genre de points faciles à sécuriser en début d'examen.
+
+Récap de ta prépa : Schatzsuche, Minesucher, Vier gewinnt, Reversi, Kalaha, Mastermind, Pig ✅ (Dame à finaliser).
