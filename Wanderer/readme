@@ -1,1 +1,160 @@
+J'ai lu l'énoncé (Variante B) et tes trois classes. Bonne nouvelle : ton programme fonctionne et résout l'énigme. J'ai tracé la séquence gagnante AB → A → CD → B → AB : tu obtiens bien 50, 45, 20, 10, 0 et « Geschafft! Bravo! », exactement comme le déroulé du PDF. 👏
+
+Mais il reste 3 vrais manques par rapport à l'énoncé, tous dans main.
+
+Taschenlampe ✅
+
+Attributs, constructeur, getBrenndauer, isLampeAmStartUfer, reduziereDauer, wechsleLampe : conformes à l'UML. wechsleLampe peut s'écrire en une ligne : lampeAmStartUfer = !lampeAmStartUfer;.
+
+Wanderer ✅ (2 détails)
+
+Tout est correct. Deux points :
+
+Faute de frappe dans le nom : welchsleSeite() → l'UML dit wechsleSeite(). Ça compile, mais en examen automatisé un nom de méthode faux = test raté. Renomme (Refactor → Rename).
+toString() : espace manquant. printSpielstand() (donné, non modifiable) fait System.out.print(a) sans séparateur. Ton toString produit donc A(5)B(10)C(20)D(25) alors que le PDF montre A(5) B(10) C(20) D(25). Ajoute l'espace :
+java
+return name + "(" + minuten + ") ";
+Raetselspiel — attributs ✅ et testeEnde ✅
+
+testeEnde() est juste : tous à l'autre rive ou brenndauer <= 0. Et le cas limite exact (60 min pile → brenndauer 0 avec tout le monde passé) donne bien « Geschafft », car le test final utilise < 0. Bien vu.
+
+main — les 3 manques
+
+1. Le « wenn möglich » n'est pas implémenté. L'énoncé dit : « veranlassen Sie, dass die angegebenen Wanderer, wenn möglich, das Ufer wechseln ». Ton code déplace les randonneurs sans vérifier qu'ils sont du côté de la lampe. Tape CD quand C et D sont déjà à droite et que la lampe est à gauche : ils traversent quand même à l'envers. Il faut comparer wanderer.isAmStartUfer() == t.isLampeAmStartUfer().
+
+2. La lampe change de rive même quand rien ne bouge. t.wechsleLampe() est appelé inconditionnellement. Sur une saisie invalide (XY, AA, A déjà de l'autre côté), zeit reste 0, personne ne bouge, mais la lampe change de côté → le joueur perd son tour et l'état devient incohérent.
+
+3. gewechselt (et vorherZeit) ne servent à rien. Ces variables sont déclarées dans le squelette précisément pour les deux points ci-dessus : gewechselt doit dire « un déplacement a réellement eu lieu ».
+
+Et une remarque de fond : ta cascade de if/else fait ~90 lignes et ne gère que 2 caractères. Comme les randonneurs sont A/B/C/D avec des temps croissants, un tableau + boucle règle tout — y compris le max et le « wenn möglich » :
+
+java
+private static Wanderer[] alle = { a, b, c, d };   // als Klassenattribut
+java
+gewechselt = false;
+int zeit = 0;
+for (int i = 0; i < auswahl.length(); i++) {
+    for (int j = 0; j < alle.length; j++) {
+        if (alle[j].getName() == auswahl.charAt(i)
+                && alle[j].isAmStartUfer() == t.isLampeAmStartUfer()) {  // wenn moeglich
+            int m = alle[j].wechsleSeite();      // gibt die Minuten zurueck
+            if (m > zeit) zeit = m;              // der Langsamste zaehlt
+            gewechselt = true;
+        }
+    }
+}
+if (gewechselt) {            // nur dann Lampe und Zeit anpassen
+    t.wechsleLampe();
+    t.reduziereDauer(zeit);
+}
+
+Note au passage : wechsleSeite() retourne les minutes — c'est fait exprès, tu n'as pas besoin d'appeler getMinuten() séparément.
+
+Point oublié : la question f)
+
+L'énoncé demande aussi de décrire par écrit comment printSpielstand() fonctionne (« Notieren Sie in eigenen Worten »). Ce n'est pas du code, mais ça compte — pense à le rédiger. En résumé : elle affiche la durée restante, détermine la rive de la lampe avec un opérateur ternaire, puis parcourt les quatre randonneurs et n'affiche que ceux dont la rive correspond à celle de la lampe (donc ceux qui peuvent partir).
+
+Bilan : b), c), d), e) sont bons ; g) fonctionne mais est incomplet (« wenn möglich » + lampe conditionnelle) ; f) manque. Corrige ces trois points et ton programme sera conforme à 100 %. 💪
+
+for (int i = 0; i < auswahl.length(); i++) {        // chaque lettre saisie
+    for (int j = 0; j < alle.length; j++) {         // comparee a chaque wanderer
+        if (alle[j].getName() == auswahl.charAt(i)
+                && alle[j].isAmStartUfer() == t.isLampeAmStartUfer()) {  // <- "wenn moeglich"
+            int minuten = alle[j].wechsleSeite();
+            if (minuten > zeit) zeit = minuten;     // le plus lent impose le temps
+            gewechselt = true;
+        }
+    }
+}
+if (gewechselt) { t.wechsleLampe(); t.reduziereDauer(zeit); }
+
+La deuxième condition (isAmStartUfer() == isLampeAmStartUfer()) est tout le « wenn möglich » : un randonneur ne peut partir que s'il est du même côté que la lampe. Et le if (gewechselt) évite que la lampe change de rive quand la saisie est invalide.
+
+# Raetselspiel — Korrektur und Erklaerung
+
+## Was war zu korrigieren?
+
+| # | Klasse | Problem | Loesung |
+|---|--------|---------|---------|
+| 1 | Wanderer | Methode hiess `welchsleSeite()` | `wechsleSeite()` (Name laut UML) |
+| 2 | Wanderer | `toString()` ohne Leerzeichen -> `A(5)B(10)` | `return name + "(" + minuten + ") ";` |
+| 3 | Raetselspiel | Wanderer wechselten das Ufer, ohne zu pruefen, ob sie auf der Seite der Lampe stehen | Bedingung `alle[j].isAmStartUfer() == t.isLampeAmStartUfer()` |
+| 4 | Raetselspiel | Lampe wechselte auch bei ungueltiger Eingabe die Seite | Lampe/Zeit nur anpassen, wenn `gewechselt == true` |
+| 5 | Raetselspiel | `gewechselt` war deklariert, aber unbenutzt | wird jetzt gesetzt und ausgewertet |
+| 6 | Raetselspiel | 90 Zeilen if-Kaskade fuer 2 Buchstaben | Feld `alle[]` + zwei Schleifen |
+
+---
+
+## Wie die neue main funktioniert (Schritt fuer Schritt)
+
+```java
+for (int i = 0; i < auswahl.length(); i++) {        // jedes eingegebene Zeichen
+    for (int j = 0; j < alle.length; j++) {         // mit jedem Wanderer vergleichen
+        if (alle[j].getName() == auswahl.charAt(i)
+                && alle[j].isAmStartUfer() == t.isLampeAmStartUfer()) {
+            int minuten = alle[j].wechsleSeite();
+            if (minuten > zeit) zeit = minuten;
+            gewechselt = true;
+        }
+    }
+}
+```
+
+1. **Aeussere Schleife**: geht die 1 oder 2 eingegebenen Zeichen durch.
+2. **Innere Schleife**: sucht den Wanderer mit diesem Namen.
+3. **Zweite Bedingung** ist der Kern von *"wenn moeglich"*: Der Wanderer darf nur
+   gehen, wenn er auf **derselben Seite wie die Lampe** steht. Steht er auf der
+   anderen Seite, wird er einfach uebersprungen.
+4. `wechsleSeite()` erledigt zwei Dinge auf einmal: Seite wechseln **und** die
+   Minuten zurueckgeben. Deshalb braucht man `getMinuten()` hier nicht mehr.
+5. `if (minuten > zeit) zeit = minuten;` behaelt das Maximum -> **der Langsamste
+   bestimmt die Zeit** (Regel aus der Aufgabe).
+6. `gewechselt = true;` merkt sich, dass der Zug wirklich stattgefunden hat.
+
+Danach:
+```java
+if (gewechselt) {
+    t.wechsleLampe();
+    t.reduziereDauer(zeit);
+}
+```
+Nur wenn sich jemand bewegt hat, wandert die Lampe mit und die Brenndauer sinkt.
+Bei einer unsinnigen Eingabe (z. B. `XY`, `AA`, oder ein Wanderer auf der falschen
+Seite) passiert nichts — der Spieler verliert keine Zeit.
+
+Nebeneffekt: Bei `AA` wird A nur **einmal** bewegt. Nach dem ersten Treffer steht A
+auf der anderen Seite als die Lampe, deshalb schlaegt die Bedingung beim zweiten
+Zeichen nicht mehr an.
+
+---
+
+## Aufgabe f) — Antwort zum Aufschreiben
+
+*Wie arbeitet `printSpielstand()`?*
+
+> Die Methode gibt zuerst die restliche Brenndauer der Taschenlampe aus. Danach
+> ermittelt sie mit einem Bedingungsoperator (`? :`), auf welcher Seite die Lampe
+> liegt, und gibt "links" oder "rechts" aus. Anschliessend prueft sie fuer jeden der
+> vier Wanderer einzeln, ob er auf derselben Seite steht wie die Lampe: liegt die
+> Lampe am Startufer, werden alle Wanderer mit `isAmStartUfer() == true` ausgegeben,
+> liegt sie am Zielufer, alle mit `isAmStartUfer() == false`. Ausgegeben wird jeweils
+> das Ergebnis von `toString()` des Wanderers, also Name und Gehzeit. So sieht der
+> Spieler genau die Wanderer, die im naechsten Zug gehen koennen.
+
+---
+
+## Loesung des Raetsels (60 Minuten)
+
+| Zug | Eingabe | Richtung | Zeit | Rest |
+|-----|---------|----------|------|------|
+| 1 | `AB` | links -> rechts | 10 | 50 |
+| 2 | `A` | rechts -> links | 5 | 45 |
+| 3 | `CD` | links -> rechts | 25 | 20 |
+| 4 | `B` | rechts -> links | 10 | 10 |
+| 5 | `AB` | links -> rechts | 10 | 0 |
+
+Alle vier sind am Zielufer, die Lampe ist genau bei 0 -> **Geschafft! Bravo!**
+
+Der Trick: Die beiden **Langsamsten (C und D) gehen zusammen**, und die beiden
+Schnellsten uebernehmen den Rueckweg mit der Lampe.
 
