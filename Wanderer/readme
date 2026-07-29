@@ -1,3 +1,10 @@
+Classe	Contenu	Charge
+Taschenlampe	2 attributs, constructeur, 2 getters, 1 toggle, 1 soustraction	~10 min
+Wanderer	3 attributs, constructeur, 3 getters, 1 toggle, toString	~10 min
+Raetselspiel	6 attributs, testeEnde (une expression booléenne), main	~40 min
+f) explication écrite	quelques lignes de texte	~5 min
+
+
 J'ai lu l'énoncé (Variante B) et tes trois classes. Bonne nouvelle : ton programme fonctionne et résout l'énigme. J'ai tracé la séquence gagnante AB → A → CD → B → AB : tu obtiens bien 50, 45, 20, 10, 0 et « Geschafft! Bravo! », exactement comme le déroulé du PDF. 👏
 
 Mais il reste 3 vrais manques par rapport à l'énoncé, tous dans main.
