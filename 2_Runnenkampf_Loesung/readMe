@@ -1,1 +1,128 @@
 
+# Stratégie d'examen — répondre en 2h à un sujet de 3h
+
+---
+
+## 1. Les 7 choses à identifier en 10 minutes (avant d'écrire une ligne)
+
+Lis l'énoncé une fois, stylo en main, et repère **uniquement** ceci :
+
+| # | À repérer | Pourquoi c'est décisif |
+|---|-----------|------------------------|
+| 1 | **Les structures de données imposées** (`char[][]`, `boolean[][]`, `int[]`, 2 tableaux parallèles ?) | Elles dictent 80 % du code. Si tu sais qu'il y a `runen` + `besitzer`, tu sais que presque chaque méthode = double boucle sur ces deux tableaux. |
+| 2 | **La table d'affichage** (valeur → token : `0 -> "_"`, `-1 -> "X"`…) | C'est `toString()` écrit d'avance. Recopie la table dans la marge. |
+| 3 | **Les String exacts à renvoyer** (`TREFFER`, `"Unentschieden."`, `"<Name> hat gewonnen!"`) | Un mot ou un espace en trop = test rouge. Souligne-les. |
+| 4 | **Les signatures** : le type de retour | `boolean` → `return condition;` · `int` → compteur ou index · `String` → concaténation · `void` → tu modifies un attribut. |
+| 5 | **Les contraintes** : pas de `String`-Methoden, pas de `Math`, pas de `ä ö ü ß` | `Math.abs(x)==1` → `x == 1 \|\| x == -1`. Écris « ae/oe/ue » partout. |
+| 6 | **Les méthodes déjà données** (`// gegeben`) | Ne les lis pas en détail — regarde seulement **quelles méthodes elles appellent**. Ça te donne l'ordre de priorité réel. |
+| 7 | **Le nombre de tests et ce qu'ils couvrent** | Chaque getter trivial = 1 test vert. L'algorithme le plus dur = souvent 1 seul test. |
+
+---
+
+## 2. Le tri qui fait gagner 40 minutes
+
+Classe **tous** les TODO en 3 paquets avant de coder :
+
+- **Paquet A — trivial** (constructeur, getters, `return expr;`) : ~50 % des TODO, ~15 min, et souvent **la moitié des tests**.
+- **Paquet B — patterns connus** (compter, chercher, voisins, `toString`, menu `do-while`) : recopie le squelette mental, ~20 min.
+- **Paquet C — vrai algorithme** (1 à 3 méthodes max) : tout le reste du temps.
+
+**Ne code JAMAIS dans l'ordre du sujet.** Ordre optimal :
+getters → prédicats `boolean` → compteurs → `toString` → algorithme dur → `main`.
+
+Raison : après 35 minutes tu as déjà 60–70 % des tests verts. Même si l'algorithme dur échoue, tu passes le seuil.
+
+---
+
+## 3. Signaux allemands → code Java (reconnaissance immédiate)
+
+| L'énoncé dit… | Tu écris… |
+|---|---|
+| „gibt `true` zurueck, wenn … sonst `false`" | `return bedingung;` |
+| „**mindestens ein** …" | `\|\|` · ou `return true;` dans la boucle |
+| „**alle** … / **keine** …" | boucle + `return false;` au 1er contre-exemple, `return true;` après |
+| „zaehlt, wie viele …" | `int count = 0; … count++; return count;` |
+| „**so lange** … **bis** …" | `do { … } while (!gueltig);` |
+| „**angrenzend** (darueber, darunter, links, rechts)" | 4 gardes `z > 0 && …` |
+| „… **auch diagonal**" | 8 directions : `dz`/`ds` de −1..1, sauter `0,0` |
+| „**im Kreis** / **zyklisch**" | `% LAENGE` |
+| „ASCII-Zahlen / `'A'` entspricht 65" | `c - 'A' + 1`, `(char)('A' + i)` — **jamais** une énumération |
+| „genau n **verschiedene** Stellen" | `while (gesetzt < n)` + test « case libre ? » |
+| „**verbunden** / Gebiet / Kette" | marquage itératif + `while (geaendert)` |
+| „der **langsamere/groessere** zaehlt" | `if (x > max) max = x;` |
+| „**wenn moeglich**" | une condition de validité **en plus** — c'est un piège à points |
+
+---
+
+## 4. Tes 7 erreurs récurrentes (relecture obligatoire des 5 dernières minutes)
+
+Tirées de tes 8 examens corrigés — ce sont **tes** pièges, pas des généralités :
+
+1. **Bornes 2D** : colonnes = `feld[i].length`, pas `feld.length`. *(bug dans Memory et ailleurs)*
+2. **Ne jamais décrémenter un attribut** de taille/quantité (`n--`, `anzahlMinen--`) → compteur local `gesetzt`. *(bug dans Schatzsuche)*
+3. **Validation multi-conditions** : écris-la **en positif** — `return A && B && C && D;` — jamais une pile de `if (…) return false;`. *(bug dans Dame)*
+4. **« au moins un » = OU** (`||` / `count >= 1`), jamais ET. *(3 essais sur l'exercice Nachbar)*
+5. **Une direction = une paire** `(DZ[k], DS[k])`, et on avance avec `cz += dz; cs += ds;` — jamais avec les indices de boucle. *(bug dans Reversi)*
+6. **Dernier cas = `else`**, pas `else if` → sinon « missing return statement ». *(bug dans auswertung)*
+7. **Lis les petits mots** : « wenn möglich », « nicht diagonal », « der langsamere ». *(point perdu dans Raetselspiel)*
+
+---
+
+## 5. Budget 2h type (exemple Runenkampf, 26 TODO)
+
+| Temps | Action |
+|-------|--------|
+| 0:00 – 0:10 | Lecture + les 7 repérages + tri A/B/C dans la marge |
+| 0:10 – 0:25 | Paquet A : `Spieler` (1–5), `Computer` ctor (6), `getRune`, `getBesitzer`, `imFeld`, `gegner`, `runenWert`, `istNeutral` |
+| 0:25 – 0:40 | Paquet B : `initialisiereRunen`, `mischeRunen`, `zaehleNeutrale`, `istSpielEnde`, `punkte`, `toString` |
+| 0:40 – 1:05 | Paquet C 1/3 : marquage itératif → `gebietGroesse` + `beansprucheGebiet` |
+| 1:05 – 1:15 | Paquet C 2/3 : `rotiereZeile` (modulo) |
+| 1:15 – 1:25 | Paquet C 3/3 : `Computer.waehleZug` |
+| 1:25 – 1:50 | `main` (menu → noms → boucle de tour → fin) |
+| 1:50 – 2:00 | Relecture des 7 pièges + `ä ö ü ß` + noms de méthodes exacts + String exacts |
+
+Si tu es en retard : **saute `main` avant de sauter les méthodes testées**. Une méthode testée = un point sûr ; `main` est corrigé à la main et se rattrape.
+
+---
+
+## 6. Deux réflexes qui évitent 90 % des pertes de temps
+
+- **Compile après chaque méthode** (Ctrl+S). Une erreur de compilation non traitée = 0 test exécuté = 0 point. C'est exactement ce qui s'est passé avec ton « 0/0 » JUnit.
+- **Lance les tests toutes les 15 minutes.** Tu vois immédiatement quel paquet est acquis et tu ne perds pas 20 minutes sur une méthode déjà juste.
+
+---
+
+## 7. Le catalogue de 6 squelettes à connaître par cœur
+
+```java
+// 1) COMPTER (2D)
+int count = 0;
+for (int z = 0; z < f.length; z++)
+    for (int s = 0; s < f[z].length; s++)
+        if (bedingung) count++;
+return count;
+
+// 2) TOUS / AUCUN
+for (…) for (…) if (gegenbeispiel) return false;
+return true;
+
+// 3) VOISINS (4 ou 8)
+if (z > 0          && f[z-1][s] …) …
+if (z < f.length-1 && f[z+1][s] …) …
+if (s > 0          && f[z][s-1] …) …
+if (s < f[z].length-1 && f[z][s+1] …) …
+
+// 4) MARCHER DANS UNE DIRECTION
+int cz = z + dz, cs = s + ds;
+while (imFeld(cz, cs) && bedingung) { cz += dz; cs += ds; }
+
+// 5) toString 2D
+String erg = "";
+for (…) { for (…) { erg += token(f[z][s]) + " "; } erg += "\n"; }
+return erg;
+
+// 6) MENU
+int e;
+do { System.out.println(…); e = sc.nextInt(); } while (!checkEingabeMenu(e));
+return e;
+```
