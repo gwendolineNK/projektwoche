@@ -1,0 +1,32 @@
+        A lire cette partie uniquement si apres 2h tu es bloque sinon c est la tricherie!!!
+
+
+
+Ce qu'il faut identifier en 10 minutes sur CE sujet
+
+1. Une seule structure de données : char[][] sterne. Pas de tableau parallèle de propriétaires — les positions des vaisseaux vivent dans les Spieler. Conséquence immédiate : toString a besoin des deux joueurs en paramètres, et presque toutes les autres méthodes sont de simples boucles sur sterne.
+
+2. DZ / DS sont donnés. Dès que tu vois ces deux tableaux, tu sais que « direction r » = la paire (DZ[r], DS[r]) — et que tu ne dois jamais passer un indice de boucle comme direction. C'est exactement l'erreur qui t'a coûté Reversi.
+
+3. Le vrai piège est concentré dans UNE méthode : normiere (TODO 19). En Java, -1 % 8 vaut -1, pas 7. Tout le jeu repose là-dessus : si normiere est faux, zielZeile, zielSpalte, waehleRichtung et main tombent tous. Écris-la en premier après les getters et teste-la immédiatement. La formule tient en une ligne — et l'énoncé te dit explicitement que le résultat de −1 doit être 7, de −9 doit être 7.
+
+4. Deux notions de bord qui coexistent — c'est le piège de lecture :
+
+pour le déplacement, le plateau est fermé (modulo) ;
+pour le comptage des voisins, le plateau est borné (imFeld, pas de wrap).
+
+Si tu appliques le wrap aux voisins, zaehleGleicheNachbarn renvoie de faux positifs sur les bords.
+
+5. Trois méthodes portent presque toutes les autres. wert, normiere et zaehleGleicheNachbarn sont utilisées par schrittweite, sammle, zielZeile/Spalte et la KI. Fais-les tôt et vérifie-les : elles rapportent en cascade.
+
+Budget pour 2h
+Temps	Ce que tu fais
+0:00–0:10	Lecture + repérage des 5 points ci-dessus
+0:10–0:25	Spieler (1–8) + Computer ctor (9) → 3 tests verts
+0:25–0:40	getStern, imFeld, wert, istLeer, zaehleSterne, istSpielEnde, initialisiereSterne, mischeSterne → +5 tests
+0:40–0:55	normiere, zielZeile, zielSpalte, schrittweite → +3 tests (le noyau modulaire)
+0:55–1:15	zaehleGleicheNachbarn (8 voisins bornés) + sammle → +5 tests
+1:15–1:25	toString
+1:25–1:40	Computer.waehleRichtung (le > strict départage les égalités)
+1:40–1:55	main
+1:55–2:00
